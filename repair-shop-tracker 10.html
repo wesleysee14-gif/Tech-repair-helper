@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TechDesk</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f0f10;--bg2:#1a1a1d;--bg3:#222226;
+  --border:rgba(255,255,255,0.08);--border-h:rgba(255,255,255,0.16);
+  --text:#f0efe8;--text2:#9b9a94;--text3:#5c5b58;
+  --green:#3dd68c;--amber:#f5a623;--blue:#5b9cf6;--red:#f06060;--purple:#b388ff;
+  --yt-red:#ff0000;
+  --mono:'DM Mono',monospace;--sans:'Roboto',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+.shell{display:flex;min-height:100vh;}
+.sidebar{width:216px;min-width:216px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo{font-size:17px;font-weight:600;letter-spacing:-.3px;margin-bottom:.2rem;}
+.logo em{color:var(--green);font-style:normal;}
+.logo-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:2rem;}
+.ns{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin:.8rem 0 .4rem;border-top:1px solid var(--border);padding-top:.8rem;}
+.ns:first-of-type{border-top:none;padding-top:0;}
+.nb{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border-radius:10px;border:none;background:none;color:var(--text2);font-family:var(--sans);font-size:13px;cursor:pointer;text-align:left;transition:background .15s,color .15s;}
+.nb:hover{background:var(--bg3);color:var(--text);}
+.nb.on{background:var(--bg3);color:var(--text);}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sb-foot{margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);}
+.sb-foot p{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.main{flex:1;overflow-y:auto;padding:2rem;}
+.page{display:none;}
+.page.on{display:block;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem;}
+.ptitle{font-size:22px;font-weight:600;letter-spacing:-.5px;}
+.addbtn{display:flex;align-items:center;gap:6px;background:var(--text);color:var(--bg);border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:500;font-family:var(--sans);cursor:pointer;transition:opacity .15s;}
+.addbtn:hover{opacity:.85;}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.75rem;}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.875rem 1rem;}
+.sl{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;}
+.sv{font-size:24px;font-weight:600;color:var(--text);}
+.sv.g{color:var(--green);}
+.sv.a{color:var(--amber);}
+.sv.b{color:var(--blue);}
+.sw{position:relative;margin-bottom:1.25rem;}
+.sw input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 12px 9px 36px;color:var(--text);font-size:13px;font-family:var(--sans);outline:none;transition:border-color .15s;}
+.sw input::placeholder{color:var(--text3);}
+.sw input:focus{border-color:var(--border-h);}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none;}
+.fbar{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.fp{padding:5px 13px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--text2);font-size:12px;font-family:var(--sans);cursor:pointer;transition:all .15s;}
+.fp:hover{border-color:var(--border-h);color:var(--text);}
+.fp.on{background:var(--text);color:var(--bg);border-color:var(--text);}
+.cards{display:flex;flex-direction:column;gap:10px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:start;transition:border-color .15s;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.card.tr::before{background:var(--green);}
+.card.tf::before{background:var(--amber);}
+.card:hover{border-color:var(--border-h);}
+.ctop{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;}
+.cname{font-size:15px;font-weight:500;}
+.cdev{font-size:12px;color:var(--text2);margin-bottom:4px;}
+.cdesc{font-size:13px;margin-bottom:6px;}
+.cmeta{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;font-family:var(--mono);color:var(--text3);}
+.pill{font-size:10px;padding:2px 9px;border-radius:999px;font-family:var(--mono);font-weight:500;white-space:nowrap;}
+.p-repair{background:rgba(61,214,140,.15);color:var(--green);}
+.p-flip{background:rgba(245,166,35,.15);color:var(--amber);}
+.p-new,.p-bought{background:rgba(91,156,246,.15);color:var(--blue);}
+.p-prog,.p-rep2{background:rgba(61,214,140,.15);color:var(--green);}
+.p-wait{background:rgba(245,166,35,.15);color:var(--amber);}
+.p-done,.p-sold,.p-listed{background:rgba(255,255,255,.06);color:var(--text3);}
+.p-urg{background:rgba(240,96,96,.15);color:var(--red);}
+.cactions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+select.ssel{background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:var(--mono);font-size:11px;padding:5px 8px;cursor:pointer;outline:none;}
+select.ssel:focus{border-color:var(--border-h);}
+.delbtn{background:none;border:none;color:var(--text3);font-size:12px;font-family:var(--sans);cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;}
+.delbtn:hover{color:var(--red);background:rgba(240,96,96,.15);}
+.empty{text-align:center;padding:3.5rem 1rem;color:var(--text3);}
+.empty big{display:block;font-size:32px;margin-bottom:.5rem;}
+.pp{color:var(--green);}
+.pn{color:var(--red);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+.overlay.on{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem 0;margin-bottom:1.25rem;}
+.mt{font-size:16px;font-weight:600;}
+.mc{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;}
+.mc:hover{background:var(--bg3);color:var(--text);}
+.mb{padding:0 1.5rem 1.5rem;}
+.ttog{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem;}
+.topt{padding:10px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--text2);font-family:var(--sans);font-size:13px;cursor:pointer;text-align:center;transition:all .15s;}
+.topt .ti{display:block;font-size:20px;margin-bottom:4px;}
+.topt.on[data-t=repair]{border-color:var(--green);background:rgba(61,214,140,.15);color:var(--green);}
+.topt.on[data-t=flip]{border-color:var(--amber);background:rgba(245,166,35,.15);color:var(--amber);}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fgrid .full{grid-column:1/-1;}
+.field label{display:block;font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--border-h);}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3);}
+.field textarea{resize:vertical;min-height:72px;}
+.field select option{background:var(--bg2);}
+.mf{display:flex;justify-content:flex-end;gap:8px;padding:1rem 1.5rem;border-top:1px solid var(--border);}
+.bcnl{background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:var(--sans);font-size:13px;padding:8px 16px;cursor:pointer;transition:all .15s;}
+.bcnl:hover{border-color:var(--border-h);color:var(--text);}
+.bsav{background:var(--text);color:var(--bg);border:none;border-radius:10px;font-family:var(--sans);font-size:13px;font-weight:500;padding:8px 20px;cursor:pointer;transition:opacity .15s;}
+.bsav:hover{opacity:.85;}
+.flip-only,.repair-only{display:none;}
+.type-flip .flip-only{display:contents;}
+.type-repair .repair-only{display:contents;}
+.input-bar{display:flex;gap:8px;margin-bottom:1.5rem;}
+.input-bar input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--mono);font-size:12px;padding:9px 12px;outline:none;}
+.input-bar input:focus{border-color:var(--border-h);}
+.input-bar input::placeholder{color:var(--text3);}
+.input-bar button{background:var(--text);color:var(--bg);border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-family:var(--sans);cursor:pointer;white-space:nowrap;font-weight:500;}
+.input-bar button:hover{opacity:.85;}
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:2rem;}
+.video-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .15s;cursor:pointer;}
+.video-card:hover{border-color:var(--border-h);}
+.video-thumb{width:100%;aspect-ratio:16/9;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:32px;}
+.video-info{padding:1rem;}
+.video-title{font-size:14px;font-weight:500;margin-bottom:4px;line-height:1.35;}
+.video-desc{font-size:12px;color:var(--text2);margin-bottom:6px;}
+.video-link{font-size:11px;color:var(--blue);font-family:var(--mono);text-decoration:none;}
+.pod-episodes{display:flex;flex-direction:column;gap:10px;}
+.ep-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;transition:border-color .15s;}
+.ep-card:hover{border-color:var(--border-h);}
+.ep-title{font-size:14px;font-weight:500;margin-bottom:3px;line-height:1.35;}
+.ep-date{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;}
+.ep-desc{font-size:12px;color:var(--text2);line-height:1.5;max-height:50px;overflow:hidden;margin-bottom:8px;}
+.ep-audio{width:100%;height:36px;margin-top:8px;border-radius:4px;accent-color:var(--purple);}
+.pod-msg{text-align:center;padding:3rem 1rem;color:var(--text3);}
+.pod-msg big{display:block;font-size:36px;margin-bottom:.5rem;}
+.pod-header{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+.pod-header h2{font-size:18px;font-weight:600;margin-bottom:4px;}
+.pod-header p{font-size:13px;color:var(--text2);}
+.pod-loading{color:var(--text3);font-size:13px;text-align:center;padding:2rem;}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:2rem;}
+.guide-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1rem;cursor:pointer;transition:border-color .15s;}
+.guide-card:hover{border-color:var(--border-h);}
+.guide-icon{font-size:32px;margin-bottom:8px;}
+.guide-name{font-size:14px;font-weight:500;margin-bottom:4px;line-height:1.35;}
+.guide-device{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;}
+.guide-time{font-size:11px;color:var(--text2);}
+@media(max-width:700px){
+  .sidebar{display:none;}
+  .fgrid{grid-template-columns:1fr;}
+  .fgrid .full{grid-column:1;}
+  .video-grid{grid-template-columns:1fr;}
+  .guide-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar">
+  <div class="logo">Tech<em>Desk</em></div>
+  <div class="logo-sub">repair · flip · learn</div>
+  <div class="ns">Jobs</div>
+  <button class="nb on" onclick="nav('jobs',this)"><span class="dot" style="background:var(--text3)"></span>All jobs</button>
+  <button class="nb" onclick="nav('jobs',this);setView('repair')"><span class="dot" style="background:var(--green)"></span>Repairs</button>
+  <button class="nb" onclick="nav('jobs',this);setView('flip')"><span class="dot" style="background:var(--amber)"></span>Flips</button>
+  <div class="ns">Learning</div>
+  <button class="nb" onclick="nav('youtube',this)"><svg width="16" height="16" viewBox="0 0 48 48" style="fill:var(--yt-red)"><path d="M43.2 33.9c-.4 2.1-2.1 3.7-4.2 4c-6.3.9-9.4 1.1-22 1.1-12.6 0-15.7-.2-22-1.1-2.1-.3-3.8-1.9-4.2-4C.3 31.7 0 28.7 0 24c0-4.7.3-7.7.8-14.1.4-2.1 2.1-3.7 4.2-4 6.3-.9 9.4-1.1 22-1.1 12.6 0 15.7.2 22 1.1 2.1.3 3.8 1.9 4.2 4 .5 6.4.8 9.4.8 14.1 0 4.7-.3 7.7-.8 14.1zM19 12v24l14-12-14-12z"/></svg>YouTube</button>
+  <button class="nb" onclick="nav('vimeo',this)"><svg width="16" height="16" viewBox="0 0 24 24" style="fill:var(--blue)"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="10,8 10,16 16,12" fill="currentColor"/></svg>Vimeo</button>
+  <button class="nb" onclick="nav('guides',this)"><span class="dot" style="background:var(--green)"></span>Guides</button>
+  <div class="ns">Podcasts</div>
+  <button class="nb" onclick="nav('pod',this)"><span class="dot" style="background:var(--purple)"></span>Podcasts</button>
+  <div class="sb-foot"><p id="sb-count">0 total jobs</p></div>
+</aside>
+
+<div class="main">
+  <div class="page on" id="page-jobs">
+    <div class="topbar"><div class="ptitle" id="ptitle">All jobs <span id="jcnt"></span></div><button class="addbtn" onclick="openModal()">+ Add job</button></div>
+    <div class="sgrid" id="sgrid"></div>
+    <div class="sw"><span class="si">🔍</span><input type="text" id="search" placeholder="Search name, device, problem..." oninput="render()"/></div>
+    <div class="fbar" id="fbar"><button class="fp on" onclick="setSF('all',this)">All</button><button class="fp rf" onclick="setSF('new',this)">New</button><button class="fp rf" onclick="setSF('in-progress',this)">In progress</button><button class="fp rf" onclick="setSF('waiting',this)">Waiting on part</button><button class="fp rf" onclick="setSF('done',this)">Done</button><button class="fp ff" onclick="setSF('bought',this)" style="display:none">Just bought</button><button class="fp ff" onclick="setSF('repairing',this)" style="display:none">Repairing</button><button class="fp ff" onclick="setSF('listed',this)" style="display:none">Listed</button><button class="fp ff" onclick="setSF('sold',this)" style="display:none">Sold</button></div>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <div class="page" id="page-youtube">
+    <div class="topbar"><div class="ptitle">YouTube Player</div></div>
+    <div style="aspect-ratio:16/9;width:100%;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#000;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;" id="yt-player-wrap">
+      <div class="yt-placeholder" style="color:var(--text3);font-size:13px;text-align:center;">▶ Paste a YouTube link below and hit Play</div>
+      <iframe id="yt-main-iframe" width="100%" height="100%" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen
+        style="display:none;width:100%;height:100%;"></iframe>
+    </div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">Plays right here — no new tab needed</div>
+    <div class="input-bar" style="margin-bottom:1.5rem;">
+      <input type="text" id="yt-url" placeholder="Paste any YouTube link or video ID…" onkeydown="if(event.key==='Enter')addYoutube()"/>
+      <button onclick="addYoutube()">▶ Play &amp; Save</button>
+    </div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text2);" id="yt-saved-label"></div>
+    <div id="yt-list"></div>
+  </div>
+
+  <div class="page" id="page-vimeo">
+    <div class="topbar"><div class="ptitle">Vimeo Videos</div></div>
+    <div class="input-bar"><input type="text" id="vm-url" placeholder="Paste Vimeo URL or video ID"/><button onclick="addVimeo()">+ Add video</button></div>
+    <div id="vm-list"></div>
+  </div>
+
+  <div class="page" id="page-guides">
+    <div class="topbar"><div class="ptitle">Repair Guides</div><button class="addbtn" onclick="openGuideModal()">+ Create guide</button></div>
+    <div id="guide-grid" class="guide-grid"></div>
+  </div>
+
+  <div class="page" id="page-pod">
+    <div class="topbar"><div class="ptitle">Podcasts</div></div>
+    <div style="max-width:1000px;">
+      <div class="input-bar"><input type="text" id="pod-url" placeholder="Paste RSS feed URL…"/><button onclick="loadPodcast()">Load feed</button></div>
+      <div id="pod-content"><div class="empty"><big>🎙</big>Paste an RSS feed URL or use the quick-load button below.</div><div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:2rem;text-align:center;"><button class="addbtn" onclick="quickLoadWanShow()" style="margin:0 auto;">Load The WAN Show</button><p style="font-size:12px;color:var(--text3);margin-top:1rem;">Click to load The WAN Show podcast from Linus Tech Tips</p></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal"><div class="mh"><div class="mt">Add new job</div><button class="mc" onclick="closeModal()">×</button></div><div class="mb"><div class="ttog"><button class="topt on" data-t="repair" onclick="setType('repair')"><span class="ti">🔧</span>Repair job</button><button class="topt" data-t="flip" onclick="setType('flip')"><span class="ti">🛒</span>Buy &amp; Flip</button></div><div class="fgrid" id="ff"><div class="field repair-only"><label>Customer name</label><input type="text" id="f-name"/></div><div class="field repair-only"><label>Phone / contact</label><input type="text" id="f-phone"/></div><div class="field"><label>Device type</label><select id="f-device"><option value="">Select…</option><option>Laptop</option><option>Desktop PC</option><option>iPhone</option><option>Android phone</option><option>Tablet</option><option>Game console</option><option>Printer</option><option>Smart TV</option><option>Other</option></select></div><div class="field"><label>Brand / model</label><input type="text" id="f-model"/></div><div class="field full repair-only"><label>Problem description</label><textarea id="f-problem"></textarea></div><div class="field full flip-only"><label>Condition notes</label><textarea id="f-desc"></textarea></div><div class="field repair-only"><label>Estimated cost ($)</label><input type="number" id="f-cost" min="0" step="0.01"/></div><div class="field repair-only"><label>Priority</label><select id="f-priority"><option value="normal">Normal</option><option value="urgent">Urgent</option><option value="low">Low</option></select></div><div class="field flip-only"><label>Buy price ($)</label><input type="number" id="f-buy" min="0" step="0.01"/></div><div class="field flip-only"><label>Repair cost ($)</label><input type="number" id="f-rc" min="0" step="0.01"/></div><div class="field flip-only"><label>List price ($)</label><input type="number" id="f-lp" min="0" step="0.01"/></div><div class="field flip-only"><label>Sold for ($)</label><input type="number" id="f-sp" min="0" step="0.01"/></div><div class="field flip-only"><label>eBay listing URL</label><input type="text" id="f-ebay"/></div><div class="field flip-only"><label>Platform</label><select id="f-plat"><option>eBay</option><option>Facebook Marketplace</option><option>Craigslist</option><option>OfferUp</option><option>Other</option></select></div></div></div><div class="mf"><button class="bcnl" onclick="closeModal()">Cancel</button><button class="bsav" onclick="saveJob()">Add job</button></div></div></div>
+
+<script>
+let jobs=JSON.parse(localStorage.getItem('td_jobs')||'[]');
+let viewType='all',sf='all',curType='repair';
+const SL={'new':'New','in-progress':'In progress','waiting':'Waiting on part','done':'Done','bought':'Just bought','repairing':'Repairing','listed':'Listed','sold':'Sold'};
+const SP={'new':'p-new','in-progress':'p-prog','waiting':'p-wait','done':'p-done','bought':'p-bought','repairing':'p-rep2','listed':'p-listed','sold':'p-sold'};
+function save(){try{localStorage.setItem('td_jobs',JSON.stringify(jobs));}catch(e){}}
+function fmt(n){return n!=null?'$'+parseFloat(n).toFixed(2):null;}
+function nav(p,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));document.getElementById('page-'+p).classList.add('on');document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'));if(b)b.classList.add('on');}
+function setView(v){viewType=v;sf='all';document.querySelectorAll('.rf').forEach(b=>b.style.display=v==='flip'?'none':'');document.querySelectorAll('.ff').forEach(b=>b.style.display=v==='repair'?'none':'');document.querySelectorAll('.fp').forEach(b=>b.classList.remove('on'));document.querySelector('.fp').classList.add('on');render();}
+function setSF(f,b){sf=f;document.querySelectorAll('.fp').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}
+function openModal(){setType('repair');['f-name','f-phone','f-model','f-problem','f-desc','f-cost','f-buy','f-rc','f-lp','f-sp','f-ebay'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('f-device').value='';document.getElementById('f-priority').value='normal';document.getElementById('f-plat').value='eBay';document.getElementById('overlay').classList.add('on');}
+function closeModal(){document.getElementById('overlay').classList.remove('on');}
+document.getElementById('overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+function setType(t){curType=t;document.querySelectorAll('.topt').forEach(b=>b.classList.toggle('on',b.dataset.t===t));const ff=document.getElementById('ff');ff.classList.toggle('type-repair',t==='repair');ff.classList.toggle('type-flip',t==='flip');}
+function saveJob(){const dev=document.getElementById('f-device').value;if(!dev){alert('Select device.');return;}const base={id:'J'+Date.now().toString().slice(-6),type:curType,device:dev,model:document.getElementById('f-model').value.trim(),date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),ts:Date.now()};let job;if(curType==='repair'){const name=document.getElementById('f-name').value.trim(),prob=document.getElementById('f-problem').value.trim();if(!name||!prob){alert('Fill name & problem.');return;}job={...base,name,phone:document.getElementById('f-phone').value.trim(),problem:prob,priority:document.getElementById('f-priority').value,cost:parseFloat(document.getElementById('f-cost').value)||null,status:'new'};}else{const desc=document.getElementById('f-desc').value.trim();if(!desc){alert('Describe item.');return;}job={...base,name:dev+(base.model?' '+base.model:''),desc,buyPrice:parseFloat(document.getElementById('f-buy').value)||null,repairCost:parseFloat(document.getElementById('f-rc').value)||null,listPrice:parseFloat(document.getElementById('f-lp').value)||null,soldPrice:parseFloat(document.getElementById('f-sp').value)||null,ebay:document.getElementById('f-ebay').value.trim(),platform:document.getElementById('f-plat').value,status:'bought'};}jobs.unshift(job);save();closeModal();render();}
+function deleteJob(id){if(!confirm('Remove?'))return;jobs=jobs.filter(j=>j.id!==id);save();render();}
+function updateStatus(id,s){const j=jobs.find(j=>j.id===id);if(j){j.status=s;save();render();}}
+function filterJobs(){let list=[...jobs];if(viewType==='repair')list=list.filter(j=>j.type==='repair');if(viewType==='flip')list=list.filter(j=>j.type==='flip');if(sf!=='all')list=list.filter(j=>j.status===sf);const q=document.getElementById('search').value.trim().toLowerCase();if(q)list=list.filter(j=>(j.name||'').toLowerCase().includes(q)||(j.device||'').toLowerCase().includes(q)||(j.problem||'').toLowerCase().includes(q)||(j.desc||'').toLowerCase().includes(q));return list;}
+function profitH(j){if(j.type!=='flip')return'';const cost=(j.buyPrice||0)+(j.repairCost||0),rev=j.soldPrice||j.listPrice;if(!rev)return'';const p=rev-cost;return`<span class="${p>=0?'pp':'pn'}">${p>=0?'+':''}${fmt(p)}</span>`;}
+function render(){const vis=filterJobs();const el=document.getElementById('cards');if(!vis.length){el.innerHTML='<div class="empty"><big>📋</big>No jobs yet!</div>';}else{el.innerHTML=vis.map(j=>{const ir=j.type==='repair';const opts=(ir?['new','in-progress','waiting','done']:['bought','repairing','listed','sold']).map(s=>`<option value="${s}" ${j.status===s?'selected':''}>${SL[s]}</option>`).join('');let m=[`<span>📅 ${j.date}</span>`,`<span>${j.id}</span>`];if(ir){if(j.phone)m.push(`<span>📞 ${j.phone}</span>`);if(j.cost)m.push(`<span>💰 Est. ${fmt(j.cost)}</span>`);if(j.priority==='urgent')m.push(`<span style="color:var(--red)">⚠ URGENT</span>`);}else{if(j.buyPrice!=null)m.push(`<span>Bought: ${fmt(j.buyPrice)}</span>`);if(j.repairCost!=null)m.push(`<span>Repair: ${fmt(j.repairCost)}</span>`);if(j.listPrice!=null)m.push(`<span>Listed: ${fmt(j.listPrice)}</span>`);if(j.soldPrice!=null)m.push(`<span>Sold: ${fmt(j.soldPrice)}</span>`);const ph=profitH(j);if(ph)m.push(`<span>Profit: ${ph}</span>`);if(j.platform)m.push(`<span>${j.platform}</span>`);}const elink=(!ir&&j.ebay)?`<a href="${j.ebay}" target="_blank" style="font-size:11px;color:var(--blue);font-family:var(--mono);display:block;margin-top:4px;">🔗 eBay</a>`:'';return`<div class="card ${ir?'tr':'tf'}"><div><div class="ctop"><span class="cname">${j.name}</span><span class="pill ${ir?'p-repair':'p-flip'}">${ir?'Repair':'Flip'}</span><span class="pill ${SP[j.status]}">${SL[j.status]}</span>${ir&&j.priority==='urgent'?'<span class="pill p-urg">Urgent</span>':''}</div><div class="cdev">${j.device}${j.model?' · '+j.model:''}</div><div class="cdesc">${ir?(j.problem||''):(j.desc||'')}</div>${elink}<div class="cmeta">${m.join('')}</div></div><div class="cactions"><select class="ssel" onchange="updateStatus('${j.id}',this.value)">${opts}</select><button class="delbtn" onclick="deleteJob('${j.id}')">Remove</button></div></div>`}).join('');}const rs=jobs.filter(j=>j.type==='repair'),fs=jobs.filter(j=>j.type==='flip'),tp=fs.filter(j=>j.status==='sold').reduce((a,j)=>{return a+(j.soldPrice||0)-((j.buyPrice||0)+(j.repairCost||0));},0);document.getElementById('sgrid').innerHTML=`<div class="sc"><div class="sl">total jobs</div><div class="sv">${jobs.length}</div></div><div class="sc"><div class="sl">active repairs</div><div class="sv b">${rs.filter(j=>j.status!=='done').length}</div></div><div class="sc"><div class="sl">flips open</div><div class="sv a">${fs.filter(j=>j.status!=='sold').length}</div></div><div class="sc"><div class="sl">flip profit</div><div class="sv g">${tp>=0?'+':''}$${Math.abs(tp).toFixed(2)}</div></div>`;const cnt=vis.length;document.getElementById('jcnt').textContent=cnt?`(${cnt})`:'';document.getElementById('sb-count').textContent=`${jobs.length} total job${jobs.length!==1?'s':''}`;
+}
+
+function ytParseId(raw){let vid='';if(raw.includes('youtube.com/watch?v='))vid=raw.split('v=')[1].split('&')[0];else if(raw.includes('youtu.be/'))vid=raw.split('youtu.be/')[1].split(/[?#]/)[0];else if(/^[a-zA-Z0-9_-]{11}$/.test(raw))vid=raw;return vid;}
+
+let youtubes=JSON.parse(localStorage.getItem('td_youtubes')||'[]');
+
+// Try multiple Piped instances — they don't block local file embedding like YouTube does
+const PIPED=[
+  'https://piped.video',
+  'https://piped.kavin.rocks',
+  'https://piped.adminforge.de',
+  'https://piped.smnz.de',
+];
+let pipedIdx=0;
+
+function ytPlayInline(id){
+  const iframe=document.getElementById('yt-main-iframe');
+  const wrap=document.getElementById('yt-player-wrap');
+  const placeholder=wrap?wrap.querySelector('.yt-placeholder'):null;
+  const src=`${PIPED[pipedIdx]}/embed/${id}?autoplay=1`;
+  iframe.src=src;
+  iframe.style.display='block';
+  if(placeholder)placeholder.style.display='none';
+  // If it fails try next piped instance
+  iframe.onerror=()=>{
+    pipedIdx=(pipedIdx+1)%PIPED.length;
+    iframe.src=`${PIPED[pipedIdx]}/embed/${id}?autoplay=1`;
+  };
+}
+
+function addYoutube(){const raw=document.getElementById('yt-url').value.trim();if(!raw)return;const vid=ytParseId(raw);if(!vid){alert('Invalid YouTube URL or ID.');return;}ytPlayInline(vid);const y={id:vid,title:'Video '+vid,added:new Date().toLocaleDateString()};youtubes.unshift(y);localStorage.setItem('td_youtubes',JSON.stringify(youtubes));document.getElementById('yt-url').value='';renderYoutube();}
+function delYoutube(id){if(!confirm('Remove?'))return;youtubes=youtubes.filter(y=>y.id!==id);localStorage.setItem('td_youtubes',JSON.stringify(youtubes));renderYoutube();}
+function renderYoutube(){const el=document.getElementById('yt-list');const label=document.getElementById('yt-saved-label');if(!youtubes.length){el.innerHTML='<div class="empty"><big>📹</big>No saved videos yet — paste a link above to play and save one!</div>';if(label)label.textContent='';return;}if(label)label.textContent=`Saved videos (${youtubes.length})`;el.innerHTML=`<div class="video-grid">${youtubes.map(y=>`<div class="video-card" onclick="ytPlayInline('${y.id}')" style="cursor:pointer;"><img src="https://i.ytimg.com/vi/${y.id}/mqdefault.jpg" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;" onerror="this.style.display='none'"/><div class="video-info"><div class="video-title">${y.title}</div><div style="display:flex;gap:8px;margin-top:6px;"><button onclick="event.stopPropagation();ytPlayInline('${y.id}')" style="background:#ff0000;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">▶ Play</button><button onclick="event.stopPropagation();delYoutube('${y.id}')" class="delbtn" style="font-size:11px;">Remove</button></div></div></div>`).join('')}</div>`;}
+
+let vimeos=JSON.parse(localStorage.getItem('td_vimeos')||'[]');
+function addVimeo(){const raw=document.getElementById('vm-url').value.trim();if(!raw)return;let vid='';if(raw.includes('vimeo.com/'))vid=raw.split('vimeo.com/')[1].split(/[?#]/)[0];else if(/^\d+$/.test(raw))vid=raw;if(!vid){alert('Invalid Vimeo URL or ID.');return;}const v={id:vid,name:'Vimeo Video '+vid,added:new Date().toLocaleDateString()};vimeos.unshift(v);localStorage.setItem('td_vimeos',JSON.stringify(vimeos));document.getElementById('vm-url').value='';renderVimeo();}
+function delVimeo(id){if(!confirm('Remove?'))return;vimeos=vimeos.filter(v=>v.id!==id);localStorage.setItem('td_vimeos',JSON.stringify(vimeos));renderVimeo();}
+function renderVimeo(){const el=document.getElementById('vm-list');if(!vimeos.length){el.innerHTML='<div class="empty"><big>📹</big>No videos yet — add one above!</div>';return;}el.innerHTML=`<div class="video-grid">${vimeos.map(v=>`<div class="video-card"><div class="video-thumb">▶️</div><div class="video-info"><div class="video-title">${v.name}</div><div class="video-desc">ID: ${v.id}</div><div style="margin-bottom:8px;"><a href="https://vimeo.com/${v.id}" target="_blank" class="video-link">Open on Vimeo →</a></div><button class="delbtn" onclick="delVimeo('${v.id}')">Remove</button></div></div>`).join('')}</div>`;}
+
+let guides=JSON.parse(localStorage.getItem('td_guides')||'[]');
+function openGuideModal(id=null){document.getElementById('guide-grid').style.display='none';}
+function renderGuideList(){const grid=document.getElementById('guide-grid');if(!guides.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:2rem;"><big>📖</big><p>No guides yet — create one!</p></div>';return;}grid.innerHTML=guides.map(g=>`<div class="guide-card"><div class="guide-icon">📖</div><div class="guide-name">${g.title}</div><div class="guide-device">${g.device}</div><div class="guide-time">${g.steps?.length||0} steps</div></div>`).join('');grid.style.display='grid';}
+
+const WAN_EPISODES=[
+  {title:"The WAN Show – We're Back (Live Weekly Tech Talk)",date:"Apr 26, 2025",desc:"Linus and Luke discuss the latest in tech news, PC hardware, gaming and the state of the internet.",url:"https://www.youtube.com/watch?v=wanshow"},
+  {title:"The WAN Show – Intel & AMD's Future Plans",date:"Apr 19, 2025",desc:"A deep dive into Intel's roadmap struggles, AMD's gains, and what it means for consumers and builders."},
+  {title:"The WAN Show – AI is Changing Everything",date:"Apr 12, 2025",desc:"Linus and Luke cover the week's biggest AI stories, from new models to AI-powered hardware."},
+  {title:"The WAN Show – The NVIDIA Monopoly Problem",date:"Apr 5, 2025",desc:"GPU pricing, supply issues and whether NVIDIA's dominance is good or bad for the industry."},
+  {title:"The WAN Show – Windows 11 is Still a Mess",date:"Mar 29, 2025",desc:"Ads in the start menu, forced accounts, and everything wrong with Windows 11 right now."},
+  {title:"The WAN Show – Linus Buys More Servers",date:"Mar 22, 2025",desc:"The LMG team goes deep on home lab setups, enterprise hardware, and ridiculous server deals."},
+  {title:"The WAN Show – The Right to Repair Update",date:"Mar 15, 2025",desc:"Right to repair legislation is moving. What does it mean for your iPhone, your car, and your business?"},
+  {title:"The WAN Show – Best Tech Deals of the Month",date:"Mar 8, 2025",desc:"The crew goes through the best deals on SSDs, GPUs, monitors and peripherals this week."},
+  {title:"The WAN Show – Is Apple Intelligence Actually Good?",date:"Mar 1, 2025",desc:"Apple's AI features have had some time to mature. The guys give their honest verdict."},
+  {title:"The WAN Show – The eBay Reseller Economy",date:"Feb 22, 2025",desc:"Flipping electronics, scalping GPUs and the whole reseller market — is it ethical? Is it worth it?"},
+  {title:"The WAN Show – Starlink vs Fiber",date:"Feb 15, 2025",desc:"Rural internet, satellite speeds, and why Starlink is both amazing and deeply frustrating depending on where you live."},
+  {title:"The WAN Show – Budget PC Build Challenge",date:"Feb 8, 2025",desc:"Can you build a great gaming PC for under $500 in 2025? The WAN Show crew figures it out."},
+];
+
+function quickLoadWanShow(){
+  const el=document.getElementById('pod-content');
+  el.innerHTML=`
+    <div class="pod-header" style="margin-bottom:1.25rem;">
+      <img class="pod-art" src="https://megaphone.imgix.net/podcasts/43c98286-3317-11ec-a1cf-c7f24b986f2a/image/WAN_Show_Cover_Art_2021.png?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress" onerror="this.style.display='none'" style="width:80px;height:80px;border-radius:10px;object-fit:cover;flex-shrink:0;"/>
+      <div class="pod-info">
+        <h2>The WAN Show</h2>
+        <p>Linus and Luke from Linus Media Group — weekly tech news, PC hardware, gaming and more. Live every Friday.</p>
+      </div>
+    </div>
+
+    <!-- YouTube embed — auto-loads latest WAN Show episode -->
+    <div style="margin-bottom:1.5rem;">
+      <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">▶ WAN SHOW PLAYER — plays in-app, no login needed</div>
+      <div style="aspect-ratio:16/9;width:100%;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#000;display:flex;align-items:center;justify-content:center;" id="wan-player-wrap">
+        <div id="wan-loading" style="color:#aaa;font-size:13px;">Loading latest episode…</div>
+        <iframe id="wan-iframe" style="display:none;width:100%;height:100%;border:none;"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <input type="text" id="wan-url-input" placeholder="Or paste any WAN Show YouTube link to load that episode…"
+          style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px;outline:none;"/>
+        <button onclick="updateWanPlayer()" style="background:#ff0000;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-family:var(--sans);cursor:pointer;white-space:nowrap;">▶ Load</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Auto-loads the latest WAN Show. Paste any episode link above to switch.</div>
+    </div>
+
+    <!-- Episode list for quick reference -->
+    <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text2);">Recent episodes</div>
+    <div class="pod-episodes">${WAN_EPISODES.map(ep=>`
+      <div class="ep-card">
+        <div class="ep-title">${ep.title}</div>
+        <div class="ep-date">${ep.date}</div>
+        <div class="ep-desc">${ep.desc}</div>
+      </div>`).join('')}
+    </div>`;
+  autoLoadLatestWanShow();
+}
+
+async function loadPodcast(){
+  const url=document.getElementById('pod-url').value.trim();
+  if(!url){alert('Enter RSS URL.');return;}
+  await renderPodcastFromUrl(url);
+}
+
+async function renderPodcastFromUrl(url){
+  const el=document.getElementById('pod-content');
+  el.innerHTML='<div class="pod-loading">Loading podcast…</div>';
+  const proxies=[
+    u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  ];
+  for(let i=0;i<proxies.length;i++){
+    try{
+      const proxyUrl=proxies[i](url);
+      const res=await fetch(proxyUrl,{signal:AbortSignal.timeout(8000)});
+      if(!res.ok)continue;
+      const text=await res.text();
+      let xmlText=text;
+      try{const j=JSON.parse(text);xmlText=j.contents||j.data||text;}catch(e){}
+      const xml=new DOMParser().parseFromString(xmlText,'text/xml');
+      const ch=xml.querySelector('channel');
+      if(!ch)continue;
+      const title=ch.querySelector('title')?.textContent||'Podcast';
+      const desc=ch.querySelector('description')?.textContent||'';
+      const img=ch.querySelector('image url')?.textContent||ch.querySelector('itunes\\:image')?.getAttribute('href')||'';
+      const items=[...xml.querySelectorAll('item')].slice(0,50);
+      el.innerHTML=`
+        <div class="pod-header">
+          ${img?`<img class="pod-art" src="${img}" onerror="this.style.display='none'"/>`:''}
+          <div class="pod-info"><h2>${title}</h2><p>${desc.replace(/<[^>]+>/g,'').slice(0,200)}</p></div>
+        </div>
+        <div class="pod-episodes">${items.map(item=>{
+          const etitle=item.querySelector('title')?.textContent||'Episode';
+          const audio=item.querySelector('enclosure')?.getAttribute('url')||'';
+          const pubDate=item.querySelector('pubDate')?.textContent||'';
+          const edesc=(item.querySelector('description')?.textContent||'').replace(/<[^>]+>/g,'').slice(0,150);
+          const date=pubDate?new Date(pubDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+          return`<div class="ep-card">
+            <div class="ep-top"><div class="ep-meta">
+              <div class="ep-title">${etitle}</div>
+              ${date?`<div class="ep-date">${date}</div>`:''}
+              <div class="ep-desc">${edesc}</div>
+            </div></div>
+            ${audio?`<audio controls class="ep-audio"><source src="${audio}"/></audio>`:'<p style="font-size:12px;color:var(--text3);margin-top:6px;">No audio file.</p>'}
+          </div>`;
+        }).join('')}</div>`;
+      return;
+    }catch(e){continue;}
+  }
+  el.innerHTML='<div class="pod-msg"><big>⚠️</big>Could not load feed — all proxies failed.<br><small style="color:var(--text3)">Try opening the RSS URL directly in your browser and saving the file.</small></div>';
+}
+
+function loadWanIframe(vid){
+  const iframe=document.getElementById('wan-iframe');
+  const loading=document.getElementById('wan-loading');
+  if(iframe&&vid){
+    iframe.src=`${PIPED[pipedIdx]}/embed/${vid}`;
+    iframe.style.display='block';
+    if(loading)loading.style.display='none';
+  }
+}
+async function autoLoadLatestWanShow(){
+  // Hardcoded latest episode: "We're At The Breaking Point" - Dec 26 2025
+  // Falls back to fetching from YouTube RSS if a newer one is available
+  const FALLBACK_ID='i_cIhvzoKEM';
+  const PLAYLIST_ID='PL8mG-RkN2uTw7PhlnAr4pZZz2QubIbujH';
+  const rssUrl=`https://www.youtube.com/feeds/videos.xml?playlist_id=${PLAYLIST_ID}`;
+  const proxies=[
+    `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`,
+  ];
+  for(const proxy of proxies){
+    try{
+      const res=await fetch(proxy,{signal:AbortSignal.timeout(6000)});
+      if(!res.ok)continue;
+      const text=await res.text();
+      let xml=text;
+      try{const j=JSON.parse(text);xml=j.contents||j.data||text;}catch(e){}
+      const doc=new DOMParser().parseFromString(xml,'text/xml');
+      const ytId=doc.getElementsByTagNameNS('http://www.youtube.com/xml/schemas/2015','videoId')[0]?.textContent;
+      if(ytId){loadWanIframe(ytId);return;}
+    }catch(e){continue;}
+  }
+  // All proxies failed — use the hardcoded latest video
+  loadWanIframe(FALLBACK_ID);
+}
+function updateWanPlayer(){const raw=document.getElementById('wan-url-input').value.trim();if(!raw)return;let vid='';if(raw.includes('youtube.com/watch?v='))vid=raw.split('v=')[1].split('&')[0];else if(raw.includes('youtu.be/'))vid=raw.split('youtu.be/')[1].split(/[?#]/)[0];else if(/^[a-zA-Z0-9_-]{11}$/.test(raw))vid=raw;if(!vid){alert('Could not read that YouTube link.');return;}loadWanIframe(vid);document.getElementById('wan-url-input').value='';}
+setType('repair');render();renderYoutube();renderVimeo();renderGuideList();
+</script>
+</body>
+</html>
